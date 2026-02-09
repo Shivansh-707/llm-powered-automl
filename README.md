@@ -34,6 +34,9 @@ if cardinality > 50:
     use_target_encoding()
 else:
     use_onehot_encoding()
+```
+
+
 The Solution
 This system uses LLM reasoning for context-aware decisions:
 
@@ -290,4 +293,5 @@ Planned Features
  Report Generation: Automated PDF/HTML reports with findings
 
  Deployment Ready: Docker containerization + API endpoint
+
 
