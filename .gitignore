@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.DS_Store
+experiment_memory.json
+results/
+*.csv
+.ipynb_checkpoints/
