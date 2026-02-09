@@ -78,23 +78,6 @@ The dataset presents a binary classification problem with excellent data quality
 - **Visualization**: Plotly
 - **Data Processing**: Pandas, NumPy
 
-#Project Structure 
-
-llm-powered-automl/
-├── src/
-│   ├── __init__.py
-│   ├── data_profiler.py      # Dataset analysis & statistics
-│   ├── llm_planner.py         # Gemini AI integration & prompts
-│   ├── feature_engineering.py # Encoding & transformation logic
-│   ├── modeling.py            # Model training & evaluation
-│   ├── tools.py               # Chat interface tools
-│   └── utils.py               # Helper functions & memory
-├── app.py                     # Streamlit dashboard (main entry)
-├── config.py                  # Configuration & API keys
-├── requirements.txt           # Python dependencies
-├── .env                       # API keys (not committed)
-├── .gitignore                 # Files to ignore in git
-└── README.md                  # This file
 
 ## What I Learned
 
@@ -124,7 +107,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 **Shivansh Jha**
 
 - Final Year CSE Student, India
-- Data Science Intern @ PetPooja
+- Lok Jagruti University 
 - Kaggle Enthusiast
 - GitHub: [@Shivansh-707](https://github.com/Shivansh-707)
 
@@ -145,4 +128,5 @@ This project is licensed under the MIT License.
 Made with ❤️ and Gemini AI ( and by my efforts as well ) 
 
 ⭐ If you find this project helpful, please consider giving it a star!
+
 
