@@ -32,7 +32,7 @@ cd llm-powered-automl
 pip install -r requirements.txt
 echo "GEMINI_API_KEY=your_api_key_here" > .env
 
-text
+Gotta do one thing 
 
 Replace `your_api_key_here` with your actual Gemini API key.
 
@@ -128,5 +128,6 @@ This project is licensed under the MIT License.
 Made with ❤️ and Gemini AI ( and by my efforts as well ) 
 
 ⭐ If you find this project helpful, please consider giving it a star!
+
 
 
