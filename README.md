@@ -23,7 +23,7 @@ The LLM provides interpretable reasoning for every decision, making the system e
 ### Prerequisites
 
 - Python 3.9 or higher
-- Google Gemini API key (get one free at https://aistudio.google.com/apikey - no credit card required)
+- Google Gemini API key (get one free at https://aistudio.google.com/apikey - yes bro you won't need a UPI or credit card)
 
 ### Installation
 
@@ -78,22 +78,23 @@ The dataset presents a binary classification problem with excellent data quality
 - **Visualization**: Plotly
 - **Data Processing**: Pandas, NumPy
 
-## Project Structure
+#Project Structure 
 
 llm-powered-automl/
 ├── src/
-│ ├── data_profiler.py # Dataset analysis
-│ ├── llm_planner.py # Gemini AI integration
-│ ├── feature_engineering.py # Encoding & transformations
-│ ├── modeling.py # Model training
-│ ├── tools.py # Chat interface
-│ └── utils.py # Helper functions
-├── app.py # Streamlit dashboard
-├── config.py # Configuration
-├── requirements.txt
-└── README.md
-
-text
+│   ├── __init__.py
+│   ├── data_profiler.py      # Dataset analysis & statistics
+│   ├── llm_planner.py         # Gemini AI integration & prompts
+│   ├── feature_engineering.py # Encoding & transformation logic
+│   ├── modeling.py            # Model training & evaluation
+│   ├── tools.py               # Chat interface tools
+│   └── utils.py               # Helper functions & memory
+├── app.py                     # Streamlit dashboard (main entry)
+├── config.py                  # Configuration & API keys
+├── requirements.txt           # Python dependencies
+├── .env                       # API keys (not committed)
+├── .gitignore                 # Files to ignore in git
+└── README.md                  # This file
 
 ## What I Learned
 
@@ -144,3 +145,4 @@ This project is licensed under the MIT License.
 Made with ❤️ and Gemini AI ( and by my efforts as well ) 
 
 ⭐ If you find this project helpful, please consider giving it a star!
+
