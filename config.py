@@ -4,7 +4,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # API Configuration
+# Supports both .env file (local) and Streamlit Cloud secrets
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+# Try Streamlit secrets if env var not found (for Streamlit Cloud deployment)
+if not GROQ_API_KEY:
+    try:
+        import streamlit as st
+        GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
+    except Exception:
+        pass
 MODEL_NAME = "llama-3.3-70b-versatile"
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 

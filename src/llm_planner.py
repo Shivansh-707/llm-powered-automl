@@ -5,7 +5,20 @@ import hashlib
 from groq import Groq
 from config import GROQ_API_KEY, MODEL_NAME
 
-client = Groq(api_key=GROQ_API_KEY)
+# Lazy client initialization — avoids crash if key isn't set at import time
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        if not GROQ_API_KEY:
+            raise RuntimeError(
+                "GROQ_API_KEY not set. Add it to .env (local) or Streamlit secrets (cloud)."
+            )
+        _client = Groq(api_key=GROQ_API_KEY)
+    return _client
+
 
 # Simple in-memory cache to avoid duplicate calls
 _plan_cache = {}
@@ -16,6 +29,7 @@ def _call_groq(messages, temperature=0.3, max_tokens=4000, retries=3):
     Call Groq API with exponential backoff for rate limits.
     Keeps us safe on the free tier.
     """
+    client = _get_client()
     for attempt in range(retries):
         try:
             response = client.chat.completions.create(
