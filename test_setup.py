@@ -1,10 +1,18 @@
-import google.generativeai as genai
+"""Quick test to verify Groq API connectivity."""
+from groq import Groq
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-model = genai.GenerativeModel("gemini-2.5-flash")
-response = model.generate_content("Say 'Setup complete!' if you can read this")
-print(response.text)
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+response = client.chat.completions.create(
+    model="llama-3.3-70b-versatile",
+    messages=[
+        {"role": "user", "content": "Say 'Setup complete!' if you can read this."}
+    ],
+    max_tokens=50,
+)
+
+print(response.choices[0].message.content)

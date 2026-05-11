@@ -6,3 +6,5 @@ experiment_memory.json
 results/
 *.csv
 .ipynb_checkpoints/
+venv/
+.venv/

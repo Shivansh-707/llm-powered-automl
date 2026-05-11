@@ -1,123 +1,275 @@
-# LLM-Powered AutoML System ( my kaggle journey inspiration ) 
+# 🤖 LLM-Powered AutoML System
 
-An intelligent automated machine learning system that uses Google Gemini AI to analyze datasets, generate feature engineering strategies, and train baseline models with natural language reasoning.
+An intelligent automated machine learning system that uses **Llama 3.3 70B** (via Groq) to analyze datasets, generate expert-level feature engineering strategies with natural language reasoning, and train baseline models — all with SHAP-based explainability.
 
-## What Makes This Different?
+> Traditional AutoML uses hardcoded rules. This system uses LLM reasoning to make intelligent, context-aware decisions — and explains every choice it makes.
 
-Traditional AutoML uses hardcoded rules. This system uses LLM reasoning to make intelligent, context-aware decisions about feature engineering and modeling strategies.
-
-The LLM provides interpretable reasoning for every decision, making the system educational and trustworthy.
+---
 
 ## Key Features
 
-- **LLM-Powered Analysis**: Gemini AI analyzes dataset characteristics and generates reasoning-based strategies
-- **Smart Feature Engineering**: Automatic encoding selection (target, one-hot, label) based on cardinality and data distribution
-- **Multi-Model Training**: Trains LightGBM, XGBoost, and Random Forest with 5-fold cross-validation
-- **Interactive Dashboard**: Real-time Streamlit interface for dataset upload, training, and visualization
-- **Natural Language Chat**: Ask questions about your model in plain English and get intelligent answers
-- **Advanced Visualizations**: Model comparison charts, feature importance rankings, and performance metrics
-- **Experiment Memory**: Stores past experiments to learn from similar datasets
+| Feature | Description |
+|---------|-------------|
+| **Expert Profiling** | Correlation analysis, mutual information, class imbalance detection, data leakage flagging |
+| **LLM-Powered Planning** | Llama 3.3 70B generates encoding strategies, preprocessing steps, and model configs with reasoning |
+| **Encoding Intelligence** | Explains WHY it chose one-hot vs target vs frequency vs label encoding for each feature |
+| **Class Imbalance Handling** | Auto-detects imbalance ratio, applies `scale_pos_weight` / `class_weight='balanced'` |
+| **SHAP Feature Importance** | TreeExplainer-based feature importance — shows what actually drives predictions |
+| **Smart Hyperparameters** | Dataset-size-aware model configuration (small/medium/large datasets) |
+| **Rate Limit Safe** | Single efficient LLM call, response caching, exponential backoff, rule-based fallback |
+| **Interactive Dashboard** | Streamlit UI with real-time training, visualizations, and natural language chat |
+
+---
+
+## Architecture
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌─────────────────────┐
+│  CSV Upload │────▶│  Data Profiler   │────▶│  LLM Planner (Groq) │
+└─────────────┘     │                  │     │                     │
+                    │ • Correlations   │     │ • Encoding strategy │
+                    │ • Mutual Info    │     │ • Preprocessing     │
+                    │ • Imbalance      │     │ • Model config      │
+                    │ • Leakage detect │     │ • Metric selection  │
+                    └──────────────────┘     └──────────┬──────────┘
+                                                       │
+                    ┌──────────────────┐               ▼
+                    │   Results + Chat │◀────┌─────────────────────┐
+                    │                  │     │  Feature Engineer   │
+                    │ • SHAP plots     │     │                     │
+                    │ • Model compare  │     │ • Target encoding   │
+                    │ • Encoding why   │     │ • One-hot encoding  │
+                    │ • NL questions   │     │ • Frequency encoding│
+                    └──────────────────┘     │ • Log transforms    │
+                           ▲                 │ • Missing handling  │
+                           │                 └──────────┬──────────┘
+                    ┌──────┴───────────┐               │
+                    │  Baseline Models │◀───────────────┘
+                    │                  │
+                    │ • LightGBM       │
+                    │ • XGBoost        │
+                    │ • Random Forest  │
+                    │ • Stratified CV  │
+                    └──────────────────┘
+```
+
+---
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.9 or higher
-- Google Gemini API key (get one free at https://aistudio.google.com/apikey - yes bro you won't need a UPI or credit card)
+- Python 3.9+
+- Groq API key (free at [console.groq.com](https://console.groq.com) — no credit card needed)
 
 ### Installation
 
+```bash
 git clone https://github.com/Shivansh-707/llm-powered-automl.git
 cd llm-powered-automl
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
-echo "GEMINI_API_KEY=your_api_key_here" > .env
 
-Gotta do one thing 
+# Set up API key
+echo "GROQ_API_KEY=your_api_key_here" > .env
+```
 
-Replace `your_api_key_here` with your actual Gemini API key.
+### Verify Setup
+
+```bash
+python test_setup.py
+# Should print: "Setup complete!"
+```
 
 ### Run the Application
 
+```bash
 streamlit run app.py
-
-text
+```
 
 Open http://localhost:8501 in your browser.
 
+---
+
 ## How It Works
 
-1. **Upload Dataset**: Upload a CSV file through the web interface
-2. **Data Profiling**: System analyzes dtypes, cardinality, skewness, and missing values
-3. **LLM Planning**: Gemini AI generates reasoning and creates a feature engineering plan
-4. **Feature Engineering**: Applies encodings and transformations based on the plan
-5. **Model Training**: Trains multiple baseline models with cross-validation
-6. **Results**: View model comparison, feature importance, and ask questions via chat
+### 1. Upload & Profile
+Upload any CSV dataset. The system performs deep statistical profiling:
+- Per-feature skewness, cardinality, null percentages
+- Pairwise correlation analysis (flags pairs > 0.5)
+- Mutual information scoring (ranks features by predictive power)
+- Class imbalance ratio calculation
+- Data leakage detection (features > 0.95 correlated with target)
+
+### 2. LLM Planning (Single Efficient Call)
+The rich profile is sent to Llama 3.3 70B with an expert prompt containing:
+- Explicit encoding rules (when to use one-hot vs target vs frequency)
+- Missing value strategies based on percentage thresholds
+- Class imbalance handling rules
+- Metric selection logic
+- Dataset-size-aware hyperparameter guidance
+
+The LLM returns a structured JSON plan with reasoning for every decision.
+
+### 3. Feature Engineering
+The plan is executed with:
+- **One-hot encoding**: For categoricals with ≤10 unique values
+- **Target encoding**: For medium cardinality (10-50) with smoothing
+- **Frequency encoding**: For high cardinality (>50) to prevent overfitting
+- **Label encoding**: For ordinal features
+- **Log/Log1p transforms**: For right-skewed numerics
+- **Missing value indicators**: Binary flags + imputation for informative missingness
+
+### 4. Model Training
+Three baseline models trained with intelligent configuration:
+- **LightGBM**: `scale_pos_weight` for imbalance, adaptive `n_estimators`
+- **XGBoost**: Same imbalance handling, early stopping ready
+- **Random Forest**: `class_weight='balanced'`, adaptive `min_samples_leaf`
+- **Stratified K-Fold CV** for classification (preserves class distribution)
+
+### 5. SHAP Explainability
+After training, SHAP TreeExplainer computes feature importance:
+- Shows which features actually drive predictions (not just split frequency)
+- Handles binary, multi-class, and regression
+- Samples large datasets for speed (configurable)
+
+### 6. Chat Interface
+Ask questions about your results in natural language:
+- "Why did the model choose these features?"
+- "What's the imbalance ratio?"
+- "Which encoding was used for column X and why?"
+
+---
 
 ## Example Results
 
-### Heart Disease Classification Dataset
-
-Dataset: 630,000 rows, 13 predictive features, binary classification
-
-**Model Performance:**
-
-- LightGBM: 95.46% ROC-AUC (±0.0012)
-- XGBoost: 95.23% ROC-AUC (±0.0015)
-- Random Forest: 94.74% ROC-AUC (±0.0018)
+### Synthetic Credit Default Dataset (2,000 rows, 9 features, 5.35:1 imbalance)
 
 **LLM Reasoning:**
+> Given the medium-sized dataset with class imbalance (5.35:1), the strategy focuses on F1-macro as the evaluation metric, applies scale_pos_weight to handle imbalance, and uses target encoding for high-cardinality merchant_id to prevent dimensionality explosion.
 
-The dataset presents a binary classification problem with excellent data quality. ST depression exhibits significant skewness, so a log transformation will normalize its distribution. Tree-based ensemble models are ideal for this tabular data with mixed feature types.
+**Encoding Decisions:**
+| Feature | Encoding | Reason |
+|---------|----------|--------|
+| merchant_id (200 unique) | Target | High cardinality — captures target relationship |
+| loan_purpose (25 unique) | Target | Medium cardinality — target encoding preserves info |
+| education (4 unique) | One-hot | Low cardinality — preserves all information |
+| city (7 unique) | One-hot | Low cardinality — no ordinal relationship |
+
+**Model Performance (F1-macro, 5-fold Stratified CV):**
+| Model | Score | Std |
+|-------|-------|-----|
+| LightGBM | 0.8000 | ±0.0055 |
+| Random Forest | 0.7975 | ±0.0091 |
+| XGBoost | 0.7605 | ±0.0196 |
+
+**SHAP Top Features:**
+1. merchant_id: 0.7952
+2. loan_amount: 0.3999
+3. income: 0.3977
+4. credit_score: 0.3799
+5. employment_years: 0.3765
+
+---
 
 ## Tech Stack
 
-- **LLM**: Google Gemini 2.5 Flash
-- **ML Models**: LightGBM, XGBoost, scikit-learn
-- **Feature Engineering**: category-encoders, scipy
-- **Web Framework**: Streamlit
-- **Visualization**: Plotly
-- **Data Processing**: Pandas, NumPy
+| Component | Technology |
+|-----------|-----------|
+| LLM | Llama 3.3 70B via Groq API |
+| ML Models | LightGBM, XGBoost, scikit-learn |
+| Explainability | SHAP (TreeExplainer) |
+| Feature Engineering | category-encoders, scipy, sklearn |
+| Web Framework | Streamlit |
+| Visualization | Plotly |
+| Data Processing | Pandas, NumPy |
 
+---
 
-## What I Learned
+## Rate Limit Strategy
 
-- Prompt engineering for structured JSON output from LLMs
-- Google Gemini API integration and error handling
-- AutoML pipeline design with modular architecture
-- Feature engineering strategies for different data types
-- Building interactive ML applications with Streamlit
-- Cross-validation and metric selection for different problem types
+Groq free tier gives 30 RPM / 1,000 RPD / 12K TPM for Llama 3.3 70B. This system stays safe by:
+
+1. **Single consolidated prompt** — One LLM call per dataset (not multi-turn)
+2. **Response caching** — Same dataset profile → cached plan (no duplicate calls)
+3. **Compact profile** — Sends only decision-relevant data to minimize tokens
+4. **Exponential backoff** — 10s → 20s → 40s retry on 429 errors
+5. **Rule-based fallback** — If LLM is unavailable, applies sensible defaults
+
+---
+
+## Project Structure
+
+```
+llm-powered-automl/
+├── app.py                    # Streamlit dashboard (entry point)
+├── config.py                 # Configuration (API keys, constants)
+├── requirements.txt          # Python dependencies
+├── test_setup.py             # API connectivity test
+├── test_pipeline.py          # Full integration test
+├── .env                      # API key (not committed)
+├── .gitignore
+├── README.md
+└── src/
+    ├── __init__.py
+    ├── data_profiler.py      # Statistical profiling engine
+    ├── llm_planner.py        # Groq LLM integration + fallback
+    ├── feature_engineering.py # All encoding/transform operations
+    ├── modeling.py           # Model training + SHAP
+    ├── tools.py              # Chat context utilities
+    └── utils.py              # Experiment memory
+```
+
+---
+
+## Configuration
+
+All settings in `config.py`:
+
+```python
+MODEL_NAME = "llama-3.3-70b-versatile"  # Groq model
+CV_FOLDS = 5                            # Cross-validation folds
+MAX_CARDINALITY_ONEHOT = 10             # One-hot threshold
+HIGH_CARDINALITY_THRESHOLD = 50         # Target encoding threshold
+SHAP_SAMPLE_SIZE = 500                  # SHAP computation sample
+SHAP_TOP_FEATURES = 20                  # Top features to display
+```
+
+---
 
 ## Future Enhancements
 
-- Hyperparameter optimization with Optuna
-- Multi-agent architecture for separate FE and modeling agents
-- Experiment tracking and comparison
-- Model export (pickle/ONNX)
-- ROC curves and confusion matrices
-- Support for Excel and Parquet files
-- Automated PDF/HTML reports
+- [ ] Hyperparameter optimization with Optuna
+- [ ] Multi-class SHAP summary plots (beeswarm)
+- [ ] Experiment comparison across datasets
+- [ ] Model export (pickle/ONNX)
+- [ ] ROC curves and confusion matrices
+- [ ] Support for Excel and Parquet files
+- [ ] Automated PDF/HTML reports
+- [ ] Time-series aware CV splitting
+
+---
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+---
+
 ## Author
 
 **Shivansh Jha**
-
 - Final Year CSE Student, India
-- Lok Jagruti University 
+- Lok Jagruti University
 - Kaggle Enthusiast
 - GitHub: [@Shivansh-707](https://github.com/Shivansh-707)
 
-## Acknowledgments
-
-- Google Gemini AI for free LLM API access
-- Streamlit for the web framework
-- LightGBM/XGBoost teams for ML libraries
-- Kaggle community for datasets
-- Open-source ML community
+---
 
 ## License
 
@@ -125,9 +277,4 @@ This project is licensed under the MIT License.
 
 ---
 
-Made with ❤️ and Gemini AI ( and by my efforts as well ) 
-
-⭐ If you find this project helpful, please consider giving it a star!
-
-
-
+Made with Llama 3.3 70B on Groq • LightGBM • XGBoost • SHAP
